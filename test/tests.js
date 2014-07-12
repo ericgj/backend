@@ -22,6 +22,19 @@ describe('link definition', function(){
     assert( spy.calledWith( expected, instance ) );
   })
 
+  it('builds links by rel and href and mediaType', function(){
+    var expected = { rel: 'update', href: '/thing/123', method: 'PUT', mediaType: 'some/thing' }
+    var subject = backend().link('update', 'PUT /thing/{id}', 'some/thing');
+    var instance = {id: 123};
+    var spy = Spy();
+    subject.mediaType('some/thing', spy.watch.bind(spy));
+
+    subject(instance).update(noop);
+
+    console.log('builds links by rel and href and mediaType: %o', spy.firstCall());
+    assert( spy.calledWith( expected, instance ) );
+  })
+
   it('builds links by rel and href', function(){
     var expected = { rel: 'update', href: '/thing/123', method: 'PUT' }
     var subject = backend().link('update', 'PUT /thing/{id}');

@@ -10,13 +10,17 @@ module.exports = function(){
     , adapters = {}
     , defaultType
 
-  build.link = function(rel, href){
+  build.link = function(rel, href, type){
     if (arguments.length == 1){ links.push(extend({},rel)); return this; }
     var parts = href.split(' ')
       , href = parts.pop()
-      , method = parts.pop() || 'GET'
-    links.push({ rel: rel, href: href, method: method }); 
-    return this;
+      , method = parts.pop() || 'GET';
+    var link = {}
+    if (rel) link.rel = rel;
+    if (href) link.href = href;
+    if (method) link.method = method;
+    if (type) link.mediaType = type;
+    return this.link(link); 
   }
 
   build.mediaType = function(type, fn){
