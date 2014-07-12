@@ -1,0 +1,20 @@
+{
+  "name": "backend",
+  "repo": "ericgj/backend",
+  "description": "Data-driven backend REST controller",
+  "version": "0.0.1",
+  "keywords": [],
+  "dependencies": {
+    "ericgj/uritemplate": "*",
+    "segmentio/extend": "*"
+  },
+  "development": {
+    "timoxley/assert": "*",  
+    "ericgj/minispy": "*"
+  },
+  "license": "MIT",
+  "main": "index.js",
+  "scripts": [
+    "index.js"
+  ]
+}
