@@ -61,11 +61,23 @@ describe('link definition', function(){
     assert( spy.calledWith( expected ) );
   })
 
+  it('builds static links when no instance', function(){
+    var expected = { rel: 'create', href: '/thing', method: 'POST' }
+    var subject = backend().link('create', 'POST /thing');
+    var spy = Spy();
+    subject.mediaType('whatever/plain', spy.watch.bind(spy));
+
+    subject().create(noop);
+
+    console.log('builds static links when no instance: %o', spy.firstCall());
+    assert( spy.calledWith( expected ) );
+  })
+
 })
 
 describe('mediaType definition', function(){
 
-  it('binds to handler if mediaType explicitly given', function(){
+  it('binds to handler if mediaType explicitly given in link', function(){
     var subject = backend();
     var expected = {rel: 'list', href: '/things', mediaType: 'text/csv' };
     var instance = {};
@@ -78,13 +90,35 @@ describe('mediaType definition', function(){
 
     subject(instance).list({}, 'text/csv', noop);
 
-    console.log('binds to handler if mediaType explicitly given: default: %o, spy: %o', 
+    console.log('mediaType explicitly given in link: default: %o, spy: %o', 
                 defaultSpy.firstCall(), spy.firstCall()
                );
 
     assert( spy.calledWith( expected ) );
     assert( defaultSpy.notCalled() );
   })
+
+  it('binds to first handler if mediaType explicitly given in link but not in execution', function(){
+    var subject = backend();
+    var expected = {rel: 'list', href: '/things', mediaType: 'text/csv' };
+    var instance = {};
+    subject.link({rel: 'list', href: '/things', mediaType: 'text/csv' })
+           .link('list', 'GET /things')
+
+    var defaultSpy = Spy(), spy = Spy()
+    subject.mediaType('application/json', defaultSpy.watch.bind(defaultSpy));
+    subject.mediaType('text/csv', spy.watch.bind(spy));
+
+    subject(instance).list(noop);
+
+    console.log('mediaType explicitly given in link but not in execution: default: %o, spy: %o', 
+                defaultSpy.firstCall(), spy.firstCall()
+               );
+
+    assert( spy.calledWith( expected ) );
+    assert( defaultSpy.notCalled() );
+  })
+
 
   it('binds to default handler if mediaType not explicitly given', function(){
     var subject = backend();
@@ -99,7 +133,7 @@ describe('mediaType definition', function(){
 
     subject(instance).list(noop);
 
-    console.log('binds to default handler if mediaType not explicitly given: default: %o, spy: %o', 
+    console.log('mediaType not explicitly given: default: %o, spy: %o', 
                 defaultSpy.firstCall(), spy.firstCall()
                );
 
@@ -107,7 +141,7 @@ describe('mediaType definition', function(){
     assert( spy.notCalled() );
   })
 
-  it('passes data to handler if given', function(){
+  it('passes data to handler if given in execution', function(){
     var subject = backend();
     var expected = {rel: 'list', href: '/things', method: 'GET' };
     var data = { 'some': 'thing', 'passed': 'handler' }
@@ -119,7 +153,7 @@ describe('mediaType definition', function(){
 
     subject(instance).list(data, noop);
 
-    console.log('passes data to handler if given: %o', spy.firstCall());
+    console.log('data given in execution: %o', spy.firstCall());
 
     assert( spy.calledWith( expected, data ) );
   })

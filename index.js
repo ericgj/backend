@@ -40,6 +40,7 @@ module.exports = function(){
   function findLink(rel, type){
     return links.filter( function(link){
       return link.rel == rel && (
+        ( type === undefined ) ||
         ( link.mediaType === undefined && type == defaultType ) ||
         ( link.mediaType == type )
       );
@@ -55,14 +56,14 @@ module.exports = function(){
   function buildMethod(target, rel, instance){
     target[rel] = function(data, type, fn){
       if (arguments.length == 1) { 
-        fn = data; type = defaultType; data = undefined;
+        fn = data; type = undefined; data = undefined;
       }
       if (arguments.length == 2) {
-        fn = type; type = defaultType;
+        fn = type; type = undefined;
       }
       var link = findLink(rel,type);      // error if not found
       link = resolveLink(link, instance);
-      var adapter = adapters[type];       // error if not found
+      var adapter = adapters[link.mediaType || defaultType];       // error if not found
       return adapter(link, data, fn);
     };
   }
