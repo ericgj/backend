@@ -2,7 +2,7 @@
   "name": "backend",
   "repo": "ericgj/backend",
   "description": "Data-driven backend REST controller",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "keywords": [],
   "dependencies": {
     "ericgj/uritemplate": "*",
