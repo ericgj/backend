@@ -19,7 +19,7 @@ describe('link definition', function(){
     built.self(noop);
     
     console.log('builds links by schema object: %o', spy.firstCall());
-    assert( spy.calledWith( expected, instance ) );
+    assert( spy.calledWith( expected ) );
   })
 
   it('builds links by rel and href and mediaType', function(){
@@ -32,7 +32,7 @@ describe('link definition', function(){
     subject(instance).update(noop);
 
     console.log('builds links by rel and href and mediaType: %o', spy.firstCall());
-    assert( spy.calledWith( expected, instance ) );
+    assert( spy.calledWith( expected ) );
   })
 
   it('builds links by rel and href', function(){
@@ -45,7 +45,7 @@ describe('link definition', function(){
     subject(instance).update(noop);
 
     console.log('builds links by rel and href: %o', spy.firstCall());
-    assert( spy.calledWith( expected, instance ) );
+    assert( spy.calledWith( expected ) );
   })
 
   it('builds links by rel and href, method not given', function(){
@@ -58,7 +58,7 @@ describe('link definition', function(){
     subject(instance).self(noop);
 
     console.log('builds links by rel and href, method not given: %o', spy.firstCall());
-    assert( spy.calledWith( expected, instance ) );
+    assert( spy.calledWith( expected ) );
   })
 
 })
@@ -76,13 +76,13 @@ describe('mediaType definition', function(){
     subject.mediaType('application/json', defaultSpy.watch.bind(defaultSpy));
     subject.mediaType('text/csv', spy.watch.bind(spy));
 
-    subject(instance).list('text/csv', noop);
+    subject(instance).list({}, 'text/csv', noop);
 
     console.log('binds to handler if mediaType explicitly given: default: %o, spy: %o', 
                 defaultSpy.firstCall(), spy.firstCall()
                );
 
-    assert( spy.calledWith( expected, instance ) );
+    assert( spy.calledWith( expected ) );
     assert( defaultSpy.notCalled() );
   })
 
@@ -103,8 +103,25 @@ describe('mediaType definition', function(){
                 defaultSpy.firstCall(), spy.firstCall()
                );
 
-    assert( defaultSpy.calledWith( expected, instance ) );
+    assert( defaultSpy.calledWith( expected ) );
     assert( spy.notCalled() );
+  })
+
+  it('passes data to handler if given', function(){
+    var subject = backend();
+    var expected = {rel: 'list', href: '/things', method: 'GET' };
+    var data = { 'some': 'thing', 'passed': 'handler' }
+    var instance = {};
+    subject.link('list', 'GET /things')
+
+    var spy = Spy()
+    subject.mediaType('text/csv', spy.watch.bind(spy));
+
+    subject(instance).list(data, noop);
+
+    console.log('passes data to handler if given: %o', spy.firstCall());
+
+    assert( spy.calledWith( expected, data ) );
   })
 
 })

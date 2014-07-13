@@ -53,14 +53,17 @@ module.exports = function(){
   }
 
   function buildMethod(target, rel, instance){
-    target[rel] = function(type, fn){
+    target[rel] = function(data, type, fn){
       if (arguments.length == 1) { 
+        fn = data; type = defaultType; data = undefined;
+      }
+      if (arguments.length == 2) {
         fn = type; type = defaultType;
       }
       var link = findLink(rel,type);      // error if not found
       link = resolveLink(link, instance);
       var adapter = adapters[type];       // error if not found
-      return adapter(link, instance, fn);
+      return adapter(link, data, fn);
     };
   }
 
