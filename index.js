@@ -32,8 +32,10 @@ module.exports = function(){
     var target = {};
     links.forEach( function(link){
       if (has.call(target, link.rel)) return;
-      buildMethod(target, link.rel, instance);
+      target[link.rel] = execMethod(link.rel, instance);
     });
+    target.links = linksMethod(instance);
+    target.link  = linkMethod(instance);
     return target;
   }
 
@@ -53,8 +55,24 @@ module.exports = function(){
     return resolved;
   }
 
-  function buildMethod(target, rel, instance){
-    target[rel] = function(data, type, fn){
+  function linksMethod(instance){ 
+    return function(){
+      return links.map( function(link){ 
+        return linkMethod(instance)(link.rel, link.mediaType); 
+      });
+    }
+  }
+
+      
+  function linkMethod(instance){
+    return function(rel,type){
+      var link = findLink(rel,type);
+      return resolveLink(link, instance);
+    }
+  }
+
+  function execMethod(rel, instance){
+    return function(data, type, fn){
       if (arguments.length == 1) { 
         fn = data; type = undefined; data = undefined;
       }

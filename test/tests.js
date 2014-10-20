@@ -159,3 +159,52 @@ describe('mediaType definition', function(){
   })
 
 })
+
+
+describe('link generation', function(){
+
+  var subject
+
+  beforeEach( function(){
+    subject = backend()
+                .link('self', 'GET /things/{id}',     'type1')
+                .link('self', 'GET /things/{id}.foo', 'type2')
+                .link('list', 'GET /things',          'type1')
+                .link('list', 'GET /things',          'type2')
+                .link('next', 'GET /things/{next}',   'type1')
+
+  })
+
+
+  it('resolves the link given rel and type', function(){
+    var instance = {id: 1, next: 2};
+    var link = subject(instance).link('self','type2');
+    assert( link.href == '/things/1.foo' );
+    assert( link.mediaType == 'type2' );
+  })
+
+  it('resolves the link given only rel, to the first defined link when more than one defined', function(){
+    var instance = {id: 1, next: 2};
+    var link = subject(instance).link('self');
+    assert( link.href == '/things/1' );
+    assert( link.mediaType == 'type1' );
+  })
+
+  it('resolves the link given only rel, to the first defined link when only one defined', function(){
+    var instance = {id: 1, next: 2};
+    var link = subject(instance).link('next');
+    assert( link.href == '/things/2' );
+    assert( link.mediaType == 'type1' );
+  })
+
+  it('resolves all links', function(){
+    var instance = {id: 1, next: 2};
+    var links = subject(instance).links();
+    console.log('all links: %o', links);
+    assert( links.length == 5 );
+    assert( links.filter( function(link){ return link.rel == 'self'; } ).length == 2 );
+    assert( links.filter( function(link){ return link.rel == 'list'; } ).length == 2 );
+    assert( links.filter( function(link){ return link.rel == 'next'; } ).length == 1 );
+  })
+
+})
