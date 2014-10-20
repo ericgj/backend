@@ -36,6 +36,7 @@ module.exports = function(){
     });
     target.links = linksMethod(instance);
     target.link  = linkMethod(instance);
+    target.template = templateMethod(instance);
     return target;
   }
 
@@ -63,11 +64,17 @@ module.exports = function(){
     }
   }
 
-      
   function linkMethod(instance){
     return function(rel,type){
       var link = findLink(rel,type);
       return resolveLink(link, instance);
+    }
+  }
+
+  function templateMethod(){
+    return function(rel,type){
+      var link = findLink(rel,type);
+      return link;
     }
   }
 

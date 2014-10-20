@@ -160,6 +160,36 @@ describe('mediaType definition', function(){
 
 })
 
+describe('link templates', function(){
+
+  var subject
+
+  beforeEach( function(){
+    subject = backend()
+                .link('self', 'GET /things/{id}',     'type1')
+                .link('self', 'GET /things/{id}.foo', 'type2')
+                .link('list', 'GET /things',          'type1')
+  })
+
+  it('returns the link template given rel and type', function(){
+    var template = subject().template('self','type2');
+    assert( template.href == '/things/{id}.foo' );
+    assert( template.mediaType == 'type2' );
+  })
+
+  it('returns the link template given only rel, to the first defined link when more than one defined', function(){
+    var template = subject().template('self');
+    assert( template.href == '/things/{id}' );
+    assert( template.mediaType == 'type1' );
+  })
+
+  it('returns the link template given only rel, to the first defined link when only one defined', function(){
+    var template = subject().template('list');
+    assert( template.href == '/things' );
+    assert( template.mediaType == 'type1' );
+  })
+
+})
 
 describe('link generation', function(){
 
