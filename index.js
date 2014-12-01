@@ -10,17 +10,9 @@ module.exports = function(){
     , adapters = {}
     , defaultType
 
-  build.link = function(rel, href, type){
-    if (arguments.length == 1){ links.push(extend({},rel)); return this; }
-    var parts = href.split(' ')
-      , href = parts.pop()
-      , method = parts.pop() || 'GET';
-    var link = {}
-    if (rel) link.rel = rel;
-    if (href) link.href = href;
-    if (method) link.method = method;
-    if (type) link.mediaType = type;
-    return this.link(link); 
+  build.link = function(){
+    links.push( parseLink.apply(null, arguments) ); 
+    return this;
   }
 
   build.mediaType = function(type, fn){
@@ -28,19 +20,25 @@ module.exports = function(){
     adapters[type] = fn; return this;
   }
 
-  function build(instance){
+  function build(instance, dynlinks){
     var target = {};
-    links.forEach( function(link){
+    dynlinks = (dynlinks || []).map( function(l){ return parseLink(l); } );
+    dynlinks = links.concat( dynlinks );
+    dynlinks.forEach( function(link){
       if (has.call(target, link.rel)) return;
-      target[link.rel] = execMethod(link.rel, instance);
+      target[link.rel] = execMethod(link.rel, instance, dynlinks);
     });
-    target.links = linksMethod(instance);
-    target.link  = linkMethod(instance);
-    target.template = templateMethod(instance);
+    target.links = linksMethod(instance, dynlinks);
+    target.link  = linkMethod(instance, dynlinks);
+    target.template = templateMethod(dynlinks);
     return target;
   }
 
-  function findLink(rel, type){
+  // TODO either move these functions to top-level scope by dealing with
+  // defaultType, or move them within build scope and drop the annoying
+  // links parameter.
+
+  function findLink(rel, type, links){
     return links.filter( function(link){
       return link.rel == rel && (
         ( type === undefined ) ||
@@ -50,35 +48,29 @@ module.exports = function(){
     })[0];
   }
 
-  function resolveLink(link, instance){
-    var resolved = extend({},link);
-    resolved.href = uritemplate.parse(link.href).expand(instance);
-    return resolved;
-  }
-
-  function linksMethod(instance){ 
+  function linksMethod(instance, links){ 
     return function(){
       return links.map( function(link){ 
-        return linkMethod(instance)(link.rel, link.mediaType); 
+        return linkMethod(instance, links)(link.rel, link.mediaType); 
       });
     }
   }
 
-  function linkMethod(instance){
+  function linkMethod(instance, links){
     return function(rel,type){
-      var link = findLink(rel,type);
+      var link = findLink(rel,type,links);
       return resolveLink(link, instance);
     }
   }
 
-  function templateMethod(){
+  function templateMethod(links){
     return function(rel,type){
-      var link = findLink(rel,type);
+      var link = findLink(rel,type,links);
       return link;
     }
   }
 
-  function execMethod(rel, instance){
+  function execMethod(rel, instance, links){
     return function(data, type, fn){
       if (arguments.length == 1) { 
         fn = data; type = undefined; data = undefined;
@@ -86,7 +78,7 @@ module.exports = function(){
       if (arguments.length == 2) {
         fn = type; type = undefined;
       }
-      var link = findLink(rel,type);      // error if not found
+      var link = findLink(rel,type,links);      // error if not found
       link = resolveLink(link, instance);
       var adapter = adapters[link.mediaType || defaultType];       // error if not found
       return adapter(link, data, fn);
@@ -95,4 +87,25 @@ module.exports = function(){
 
   return build;
 }
+
+
+function parseLink(rel, href, type){
+  if (arguments.length == 1){ return extend({},rel); }
+  var parts = href.split(' ')
+    , href = parts.pop()
+    , method = parts.pop() || 'GET';
+  var link = {}
+  if (rel) link.rel = rel;
+  if (href) link.href = href;
+  if (method) link.method = method;
+  if (type) link.mediaType = type;
+  return parseLink(link);
+}
+
+function resolveLink(link, instance){
+  var resolved = extend({},link);
+  resolved.href = uritemplate.parse(link.href).expand(instance);
+  return resolved;
+}
+
 

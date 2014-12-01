@@ -238,3 +238,52 @@ describe('link generation', function(){
   })
 
 })
+
+describe('dynamic links', function(){
+
+  var subject;
+
+  beforeEach( function(){
+    subject = backend();
+  })
+
+  it('generates dynamic links (passed in to builder)', function(){
+    var instance = {id: 1};
+    var links = [ { rel: 'self', href: '/things/{id}' },
+                  { rel: 'update', href: '/things/{id}', method: 'PUT' }
+                ]; 
+    var actual = subject(instance, links);
+    var links = actual.links();
+    console.log('dynamic links: %o', links);
+    assert( links.length == 2 );
+  })
+
+  it('generates static and dynamic links', function(){
+    subject.link('list', 'GET /things');
+    var instance = {id: 1};
+    var links = [ { rel: 'self', href: '/things/{id}' },
+                  { rel: 'update', href: '/things/{id}', method: 'PUT' }
+                ]; 
+    var actual = subject(instance, links);
+    var links = actual.links();
+    console.log('static and dynamic links: %o', links);
+    assert( links.length == 3 );
+  })
+
+  it('dynamic links do not mutate static', function(){
+    subject.link('list', 'GET /things');
+    var instance = {id: 1};
+    var links = [ { rel: 'self', href: '/things/{id}' },
+                  { rel: 'update', href: '/things/{id}', method: 'PUT' }
+                ]; 
+    var actual = subject(instance, links);
+    var links = actual.links();
+    assert( links.length == 3 );
+
+    var actual2 = subject(instance);
+    var links2 = actual2.links();
+    console.log('dynamic links do not mutate static: %o', links2);
+    assert( links2.length == 1 );
+  })
+
+})
