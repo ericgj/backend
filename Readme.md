@@ -6,6 +6,8 @@
 
   * URI Templating [RFC 6570][uritemplates] to generate link href's
   * Transport-agnostic - you provide adapters per media type
+  * "Static" predefined link templates, or "dynamic" link templates
+    passed into builder, or both
 
 ## Installation
 
